@@ -1,4 +1,4 @@
-# BotWatchy-Fahrenheit
+# Kave Watchy
 
 ![alt text](watchface.jpg "This is what you will get")
 
