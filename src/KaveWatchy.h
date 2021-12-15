@@ -5,7 +5,6 @@
 #include "../include/images.h"
 #include "../include/NIOBRG__10pt7b.h"
 #include "../include/NIOBRG__30pt7b.h"
-#include "../include/secrets.h"
 
 #define DRAW_TEMPERATURE true
 
