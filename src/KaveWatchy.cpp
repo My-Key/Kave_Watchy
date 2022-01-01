@@ -1,29 +1,31 @@
 #include "KaveWatchy.h"
 
-const int posBatteryX = 15;
-const int posBatteryY = 15;
+const int POS_BATTERY_X = 15;
+const int POS_BATTERY_Y = 15;
 
-const int posBatteryFillX = posBatteryX + 2;
-const int posBatteryFillY = posBatteryY + 14;
+const int POS_BATTERY_FILL_X = POS_BATTERY_X + 2;
+const int POS_BATTERY_FILL_Y = POS_BATTERY_Y + 14;
 
-const int posTimeCenterX = 120;
-const int posTimeY = 120;
+const int POS_TIME_CENTER_X = 120;
+const int POS_TIME_Y = 120;
 
-const int posAMPMTimeX = 160;
-const int posAMPMTimeY = 140;
+const int POS_AM_PM_TIME_X = 160;
+const int POS_AM_PM_TIME_Y = 140;
 
-const int posDateX = 25;
-const int posDate1Y = 150;
+const int POS_DATE_X = 25;
+const int POS_DATE_Y1 = 150;
 
-const int posDate2Y = 175;
+const int POS_DATE_Y2 = 175;
 
-const int posStepsIconX = 137;
-const int posStepsIconY = 15;
+const int POS_STEPS_ICON_X = 137;
+const int POS_STEPS_ICON_Y = 15;
 
-const int posStepsBGX = 51;
-const int posStepsBGY = 25;
+const int POS_STEPS_BG_X = 51;
+const int POS_STEPS_BG_Y = 25;
 
-const int posStepsOffsetY = 22;
+const int POS_STEPS_OFFSET_Y = 22;
+
+const int BATTER_FILL_Y = 57;
 
 const float VOLTAGE_MIN = 3.4;
 const float VOLTAGE_MAX = 4.2;
@@ -62,8 +64,8 @@ void KaveWatchy::drawTime()
 
   display.getTextBounds(String(":"), 0, 0, &x1, &y1, &w, &h);
 
-  int colonXStart = posTimeCenterX - w / 2;
-  int colonXEnd = posTimeCenterX + w / 2 + 4;
+  int colonXStart = POS_TIME_CENTER_X - w / 2;
+  int colonXEnd = POS_TIME_CENTER_X + w / 2 + 4;
 
   String hourString = "";
   
@@ -74,10 +76,10 @@ void KaveWatchy::drawTime()
 
   display.getTextBounds(hourString, 0, 0, &x1, &y1, &w, &h);
 
-  display.setCursor(colonXStart - w - 4, posTimeY);
+  display.setCursor(colonXStart - w - 4, POS_TIME_Y);
   display.print(hourString);
   
-  display.setCursor(colonXStart, posTimeY);
+  display.setCursor(colonXStart, POS_TIME_Y);
   display.print(":");
 
   String minuteString = "";
@@ -87,14 +89,14 @@ void KaveWatchy::drawTime()
 
   minuteString += String(currentTime.Minute);
 
-  display.setCursor(colonXEnd, posTimeY);
+  display.setCursor(colonXEnd, POS_TIME_Y);
   display.print(minuteString);
 
   if (HOUR_12_24 != 12)
     return;
 
   display.setFont(&NIOBRG__10pt7b);
-  display.setCursor(posAMPMTimeX, posAMPMTimeY);
+  display.setCursor(POS_AM_PM_TIME_X, POS_AM_PM_TIME_Y);
   display.print(am ? "AM" : "PM");
 }
 
@@ -128,10 +130,10 @@ void KaveWatchy::drawDate()
   String dayOfWeek = dayStr(currentTime.Wday);
   String month = monthStr(currentTime.Month);
 
-  display.setCursor(posDateX, posDate1Y);
+  display.setCursor(POS_DATE_X, POS_DATE_Y1);
   display.println(dayOfWeek);
 
-  display.setCursor(posDateX, posDate2Y);
+  display.setCursor(POS_DATE_X, POS_DATE_Y2);
   display.print(month);
   display.print(" ");
 
@@ -148,16 +150,16 @@ void KaveWatchy::drawSteps(){
     
     uint32_t stepCount = sensor.getCounter();
 
-    display.drawBitmap(posStepsIconX, posStepsIconY, epd_bitmap_Shell, 48, 50, GxEPD_BLACK);
+    display.drawBitmap(POS_STEPS_ICON_X, POS_STEPS_ICON_Y, epd_bitmap_Shell, 48, 50, GxEPD_BLACK);
     
-    display.drawBitmap(posStepsBGX, posStepsBGY, epd_bitmap_Steps_BG, 85, 30, GxEPD_BLACK);
+    display.drawBitmap(POS_STEPS_BG_X, POS_STEPS_BG_Y, epd_bitmap_Steps_BG, 85, 30, GxEPD_BLACK);
 
     int16_t  x1, y1;
     uint16_t w, h;
     display.getTextBounds(String(stepCount), 0, 0, &x1, &y1, &w, &h);
 
     display.setFont(&NIOBRG__10pt7b);
-    display.setCursor(posStepsIconX - 10 - w, posStepsBGY + posStepsOffsetY);
+    display.setCursor(POS_STEPS_ICON_X - 10 - w, POS_STEPS_BG_Y + POS_STEPS_OFFSET_Y);
     display.println(stepCount);
 }
 
@@ -166,26 +168,29 @@ void KaveWatchy::drawBattery()
   float VBAT = getBatteryVoltage();
 
   // 12 battery states
-  int batState = int(((VBAT - VOLTAGE_MIN) / VOLTAGE_RANGE) * 57);
-  if (batState > 57)
-    batState = 57;
+  int batState = int(((VBAT - VOLTAGE_MIN) / VOLTAGE_RANGE) * BATTER_FILL_Y);
+  if (batState > BATTER_FILL_Y)
+    batState = BATTER_FILL_Y;
   if (batState < 0)
     batState = 0;
 
   int top = random(0, epd_bitmap_Battery_Top_LEN);
 
-  display.drawBitmap(posBatteryX, posBatteryY, epd_bitmap_Battery_BG, 29, 101, GxEPD_BLACK);
+  display.drawBitmap(POS_BATTERY_X, POS_BATTERY_Y, epd_bitmap_Battery_BG, 29, 101, GxEPD_BLACK);
 
-  int fillPosY = posBatteryFillY + (57 - batState);
+  int fillPosY = POS_BATTERY_FILL_Y + (BATTER_FILL_Y - batState);
 
-  int size = batState;
+  int batterTopSizeY = batState;
 
-  if (size > 20)
-    size = 20;
+  if (batterTopSizeY > 20)
+    batterTopSizeY = 20;
 
-  display.drawBitmap(posBatteryFillX, fillPosY, epd_bitmap_Battery_Top[top], 25, size, GxEPD_WHITE);
+  display.drawBitmap(POS_BATTERY_FILL_X, fillPosY, epd_bitmap_Battery_Top[top], 25, batterTopSizeY, GxEPD_WHITE);
 
-  drawFillBitmap(posBatteryFillX, fillPosY + 2, 25, batState - 2, random(0, 25), random(0, 25), epd_bitmap_Bubbles, 25, 25, GxEPD_WHITE);
+  const int bubbleSize = 25;
+
+  drawFillBitmap(POS_BATTERY_FILL_X, fillPosY + 2, bubbleSize, batState - 2, random(0, bubbleSize), random(0, bubbleSize), 
+  epd_bitmap_Bubbles, bubbleSize, bubbleSize, GxEPD_WHITE);
 }
 
 
