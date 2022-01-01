@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include <KaveWatchy.h>
+#include "settings.h"
 
-KaveWatchy watchy;
+KaveWatchy watchy(settings);
 
 void setup() {
   watchy.init();

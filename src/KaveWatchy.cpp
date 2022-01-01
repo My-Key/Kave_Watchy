@@ -25,14 +25,15 @@ const int posStepsBGY = 25;
 
 const int posStepsOffsetY = 22;
 
-const float VOLTAGE_MIN = 3.2;
-const float VOLTAGE_MAX = 4.1;
-const float VOLTAGE_RANGE = 0.9;
+const float VOLTAGE_MIN = 3.4;
+const float VOLTAGE_MAX = 4.2;
+const float VOLTAGE_RANGE = VOLTAGE_MAX - VOLTAGE_MIN;
 
-KaveWatchy::KaveWatchy()
-{
-  // Serial.begin(115200);
-}
+const int epd_bitmap_Battery_Top_LEN = 6;
+const unsigned char* epd_bitmap_Battery_Top[epd_bitmap_Battery_Top_LEN] = {
+	epd_bitmap_Battery_Top_1, epd_bitmap_Battery_Top_2, epd_bitmap_Battery_Top_3,
+	epd_bitmap_Battery_Top_4, epd_bitmap_Battery_Top_5, epd_bitmap_Battery_Top_6
+};
 
 void KaveWatchy::drawWatchFace()
 {
@@ -165,30 +166,49 @@ void KaveWatchy::drawBattery()
   float VBAT = getBatteryVoltage();
 
   // 12 battery states
-  int batState = int(((VBAT - VOLTAGE_MIN) / VOLTAGE_RANGE) * 4);
-  if (batState > 4)
-    batState = 4;
+  int batState = int(((VBAT - VOLTAGE_MIN) / VOLTAGE_RANGE) * 57);
+  if (batState > 57)
+    batState = 57;
   if (batState < 0)
     batState = 0;
 
+  int top = random(0, epd_bitmap_Battery_Top_LEN);
+
   display.drawBitmap(posBatteryX, posBatteryY, epd_bitmap_Battery_BG, 29, 101, GxEPD_BLACK);
 
-  switch(batState)
-  {
-    case 4:
-      display.drawBitmap(posBatteryFillX, posBatteryFillY, epd_bitmap_Battery_Fill_100, 25, 60, GxEPD_WHITE);
-      break;
-    case 3:
-      display.drawBitmap(posBatteryFillX, posBatteryFillY, epd_bitmap_Battery_Fill_75, 25, 60, GxEPD_WHITE);
-      break;
-    case 2:
-      display.drawBitmap(posBatteryFillX, posBatteryFillY, epd_bitmap_Battery_Fill_50, 25, 60, GxEPD_WHITE);
-      break;
-    case 1:
-      display.drawBitmap(posBatteryFillX, posBatteryFillY, epd_bitmap_Battery_Fill_25, 25, 60, GxEPD_WHITE);
-      break;
-    default:
-      display.drawBitmap(posBatteryFillX, posBatteryFillY, epd_bitmap_Battery_Fill_0, 25, 60, GxEPD_WHITE);
-      break;
+  int fillPosY = posBatteryFillY + (57 - batState);
+
+  int size = batState;
+
+  if (size > 20)
+    size = 20;
+
+  display.drawBitmap(posBatteryFillX, fillPosY, epd_bitmap_Battery_Top[top], 25, size, GxEPD_WHITE);
+
+  drawFillBitmap(posBatteryFillX, fillPosY + 2, 25, batState - 2, random(0, 25), random(0, 25), epd_bitmap_Bubbles, 25, 25, GxEPD_WHITE);
+}
+
+
+void KaveWatchy::drawFillBitmap(int16_t x, int16_t y, int16_t fw, int16_t fh, int16_t ox, int16_t oy, 
+const uint8_t bitmap[], int16_t w, int16_t h, uint16_t color)
+{
+  int16_t byteWidth = (w + 7) / 8; // Bitmap scanline pad = whole byte
+  uint8_t byte = 0;
+
+  display.startWrite();
+  for (int16_t fy = 0; fy < fh; fy++, y++) {
+    for (int16_t fx = 0; fx < fw; fx++) {
+
+      int16_t bx = (fx + ox) % w;
+      int16_t by = (fy + oy) % h;
+
+      if (bx & 7)
+        byte <<= 1;
+      else
+        byte = pgm_read_byte(&bitmap[by * byteWidth + bx / 8]);
+      if (byte & 0x80)
+        display.writePixel(x + fx, y, color);
+    }
   }
+  display.endWrite();
 }
