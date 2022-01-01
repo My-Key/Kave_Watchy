@@ -1,6 +1,6 @@
 # Kave Watchy
 
-![alt text](watchface.jpg "This is what you will get")
+![alt text](Watchface.gif "This is what you will get")
 
 This is a watch face for the open E-Ink display smartwatch [Watchy](https://watchy.sqfmi.com/).  
 It is inspired by the HUD of 'Jet Kave Adventure'.
